@@ -1,6 +1,6 @@
 # 1. Technologie
 ## Hardware
-  1. Mikrokontroler -- ESP32/ Raspberry pico W
+  1. Mikrokontroler -- ESP32
   2. Akcelerometr -- 3-osiowy akcelerometr cyfrowy MMA8452 I2C - HW-616
   3. Moduł ładowania -- Lipo Charger - moduł ładujący do akumulatorów Li-Pol poprzez USB C - DFRobot DFR0668
   4. Akumulator -- Akumulator Li-Pol Akyga 2200mAh 1S 3,7V - przewody 50mm - 59x37x9mm

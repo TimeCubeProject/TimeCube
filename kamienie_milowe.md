@@ -13,9 +13,9 @@
 # 2. Kamienie Milowe
 
 ### 04.04.2024 - Układ mikrokontrolera
-- [ ]  Połączenie wszystkich elementów
-- [ ]  Działające ładowanie z baterii
-- [ ]  Akcelerometr wykrywający zmiany w położeniu
+- [X]  Połączenie wszystkich elementów
+- [X]  Działające ładowanie z baterii
+- [X]  Akcelerometr wykrywający zmiany w położeniu
 ### 18.04.2024 - Program kostki
 - [ ]  Prototyp obudowy
 - [ ]  Wykrywanie wszystkich ścianek kostki (5 z projektami i 1 na przerwę/ładowanie)

@@ -4,19 +4,19 @@
 cmake_minimum_required(VERSION 3.5)
 
 file(MAKE_DIRECTORY
-  "C:/Users/grzes/esp/v5.2.1/esp-idf/components/bootloader/subproject"
-  "C:/Users/grzes/MatiEsp/build/bootloader"
-  "C:/Users/grzes/MatiEsp/build/bootloader-prefix"
-  "C:/Users/grzes/MatiEsp/build/bootloader-prefix/tmp"
-  "C:/Users/grzes/MatiEsp/build/bootloader-prefix/src/bootloader-stamp"
-  "C:/Users/grzes/MatiEsp/build/bootloader-prefix/src"
-  "C:/Users/grzes/MatiEsp/build/bootloader-prefix/src/bootloader-stamp"
+  "/Users/zet/esp/v5.2.1/esp-idf/components/bootloader/subproject"
+  "/Users/zet/Studia/TimeCube/TimeCube/esp32/build/bootloader"
+  "/Users/zet/Studia/TimeCube/TimeCube/esp32/build/bootloader-prefix"
+  "/Users/zet/Studia/TimeCube/TimeCube/esp32/build/bootloader-prefix/tmp"
+  "/Users/zet/Studia/TimeCube/TimeCube/esp32/build/bootloader-prefix/src/bootloader-stamp"
+  "/Users/zet/Studia/TimeCube/TimeCube/esp32/build/bootloader-prefix/src"
+  "/Users/zet/Studia/TimeCube/TimeCube/esp32/build/bootloader-prefix/src/bootloader-stamp"
 )
 
 set(configSubDirs )
 foreach(subDir IN LISTS configSubDirs)
-    file(MAKE_DIRECTORY "C:/Users/grzes/MatiEsp/build/bootloader-prefix/src/bootloader-stamp/${subDir}")
+    file(MAKE_DIRECTORY "/Users/zet/Studia/TimeCube/TimeCube/esp32/build/bootloader-prefix/src/bootloader-stamp/${subDir}")
 endforeach()
 if(cfgdir)
-  file(MAKE_DIRECTORY "C:/Users/grzes/MatiEsp/build/bootloader-prefix/src/bootloader-stamp${cfgdir}") # cfgdir has leading slash
+  file(MAKE_DIRECTORY "/Users/zet/Studia/TimeCube/TimeCube/esp32/build/bootloader-prefix/src/bootloader-stamp${cfgdir}") # cfgdir has leading slash
 endif()

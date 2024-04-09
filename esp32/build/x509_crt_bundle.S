@@ -1,4 +1,4 @@
-/* * Data converted from C:/Users/grzes/MatiEsp/build/esp-idf/mbedtls/x509_crt_bundle
+/* * Data converted from /Users/zet/Studia/TimeCube/TimeCube/esp32/build/esp-idf/mbedtls/x509_crt_bundle
  */
 .data
 .section .rodata.embedded

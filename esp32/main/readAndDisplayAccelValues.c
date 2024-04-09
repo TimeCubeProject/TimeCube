@@ -1,8 +1,7 @@
-#include "variables.c"
 #include "driver/i2c.h"
+#include "variables.c"
 
-void readAccel(int16_t *AccelX, int16_t *AccelY, int16_t *AccelZ)
-{
+void readAccel(int16_t *AccelX, int16_t *AccelY, int16_t *AccelZ) {
   uint8_t data[7];
   i2c_cmd_handle_t cmd = i2c_cmd_link_create();
   i2c_master_start(cmd);
@@ -14,20 +13,17 @@ void readAccel(int16_t *AccelX, int16_t *AccelY, int16_t *AccelZ)
 
   int16_t x, y, z;
   x = ((data[1] << 8) | data[2]) / 16;
-  if (x > 2047)
-  {
+  if (x > 2047) {
     x -= 4096;
   }
 
   y = ((data[3] << 8) | data[4]) / 16;
-  if (y > 2047)
-  {
+  if (y > 2047) {
     y -= 4096;
   }
 
   z = ((data[5] << 8) | data[6]) / 16;
-  if (z > 2047)
-  {
+  if (z > 2047) {
     z -= 4096;
   }
 
@@ -36,12 +32,9 @@ void readAccel(int16_t *AccelX, int16_t *AccelY, int16_t *AccelZ)
   *AccelZ = z;
 }
 
-
-void printValues(int16_t AccelX, int16_t AccelY, int16_t AccelZ){
-    printf("--------------------\n");
-    printf("Acceleration in X-Axis : %d\n", AccelX);
-    printf("Acceleration in Y-Axis : %d\n", AccelY);
-    printf("Acceleration in Z-Axis : %d\n", AccelZ);
-
-    vTaskDelay(DELAY_MS / portTICK_PERIOD_MS);
+void printValues(int16_t AccelX, int16_t AccelY, int16_t AccelZ) {
+  printf("--------------------\n");
+  printf("Acceleration in X-Axis : %d\n", AccelX);
+  printf("Acceleration in Y-Axis : %d\n", AccelY);
+  printf("Acceleration in Z-Axis : %d\n", AccelZ);
 }

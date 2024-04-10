@@ -10,6 +10,7 @@
 #include "variables.c"
 #include <esp_log.h>
 #include <stdio.h>
+#include "checkIfCubeChangedPosition.c"
 
 void MMA8452Q_init() {
   init_Ic2_With_Given_Parameters(MMA8452Q_ADDR, 0x2A, 0x00);
@@ -28,6 +29,10 @@ void app_main() {
     int16_t AccelX, AccelY, AccelZ;
     readAccel(&AccelX, &AccelY, &AccelZ);
     printValues(AccelX, AccelY, AccelZ);
+    int wallPosition = checkPosition(AccelX, AccelY, AccelZ);
+    if(wallPosition !=0){
+      printf("Current wall is %d \n", wallPosition);
+    }
 
     vTaskDelay(DELAY_MS / portTICK_PERIOD_MS);
   }

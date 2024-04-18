@@ -1,2 +1,2 @@
-idf_component_register(SRCS "wifi_starter.c" "checkIfCubeChangedPosition.c" "main.c" "readAndDisplayTimerValue.c" "readAndDisplayAccelValues.c" "variables.c" "ic2Initialize.c"
+idf_component_register(SRCS "accelReadAndCheckPosition.c" "wifi_starter.c" "main.c" "readAndDisplayTimerValue.c" "ic2Initialize.c"
                     INCLUDE_DIRS "")

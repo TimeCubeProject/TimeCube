@@ -1,5 +1,4 @@
 
-#include <string.h>
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
 #include "freertos/event_groups.h"
@@ -11,7 +10,7 @@
 
 #include "lwip/err.h"
 #include "lwip/sys.h"
-#include "wifi_config.h"
+#include "config.h"
 
 
 static EventGroupHandle_t s_wifi_event_group;

@@ -7,6 +7,7 @@
 #include "wifi_starter.c"
 #include "accelReadAndCheckPosition.c"
 #include <stdio.h>
+#include "sender.c"
 
 static const char *TAGm = "Accel";
 
@@ -96,7 +97,8 @@ void app_main()
 {
   main_i2c_init(MMA8452Q_SDA, MMA8452Q_SCL);
   MMA8452Q_init();
-  // startWifi();
+  startWifi();
+  rest_get();
 
   gptimer = timer_init();
   gptimerGlobal = timer_init();

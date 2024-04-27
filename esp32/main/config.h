@@ -5,7 +5,7 @@
 #define GPIO_PIN_INT1 23
 
 #define user_ssid "esp"
-#define user_password "nicxdnic"
+#define user_password "nicxdnic23"
 
 
 #define EXAMPLE_ESP_WIFI_SSID      CONFIG_ESP_WIFI_SSID

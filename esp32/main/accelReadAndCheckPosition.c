@@ -1,7 +1,6 @@
 #include <stdio.h>
-
-#include "driver/i2c.h"
 #include "config.h"
+#include "driver/i2c.h"
 int checkPosition(int16_t AccelX, int16_t AccelY, int16_t AccelZ)
 {
 

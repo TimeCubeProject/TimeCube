@@ -23,13 +23,12 @@ esp_err_t client_event_get_handler(esp_http_client_event_handle_t evt)
     return ESP_OK;
 }
 
-
 esp_err_t client_event_post_handler(esp_http_client_event_handle_t evt)
 {
     switch (evt->event_id)
     {
     case HTTP_EVENT_ON_DATA:
-        printf("HTTP_EVENT_ON_DATA: %.*s\n", evt->data_len, (char *)evt->data);
+        // printf("HTTP_EVENT_ON_DATA: %.*s\n", evt->data_len, (char *)evt->data);
         break;
 
     default:
@@ -41,7 +40,7 @@ esp_err_t client_event_post_handler(esp_http_client_event_handle_t evt)
 static void rest_get()
 {
     esp_http_client_config_t config_get = {
-        .url = "http://numbersapi.com/random/math",
+        .url = "http://radoslaw.idzikowski.staff.iiar.pwr.wroc.pl/instruction/students.json",
         .method = HTTP_METHOD_GET,
         .cert_pem = NULL,
         .event_handler = client_event_get_handler};
@@ -51,14 +50,43 @@ static void rest_get()
     esp_http_client_cleanup(client);
 }
 
+// static void send_http_post_request(int currentWall)
+// {
+//     // JSON data to send in the request
+//     const char *post_data = "{\"mac\":\"dupa\",\"id\":\"i kamieni kupa\",\"tablica\":[\"jebać\",\"bydgoszcz\"]}";
 
-void send_http_post_request()
+//     esp_http_client_config_t config_post = {
+//         .url = "http://192.168.144.9:3000/test",
+//         .method = HTTP_METHOD_POST,
+//         .cert_pem = NULL,
+//         .event_handler = client_event_post_handler};
+
+//     esp_http_client_handle_t client = esp_http_client_init(&config_post);
+
+//     esp_http_client_set_post_field(client, post_data, strlen(post_data));
+//     esp_http_client_set_header(client, "Content-Type", "application/json");
+
+//     esp_http_client_perform(client);
+//     esp_http_client_cleanup(client);
+
+// }
+
+void get_mac_address(uint8_t *mac)
 {
-    // JSON data to send in the request
-    const char *post_data = "{\"clientNumbers\":[1,2,3,4,5,6]}";
+    esp_wifi_get_mac(ESP_IF_WIFI_STA, mac);
+}
+
+static void send_http_post_request(int currentWall, char *id_koskta)
+{
+    uint8_t mac[6];
+    get_mac_address(mac);
+
+    char post_data[100];
+    snprintf(post_data, sizeof(post_data), "{\"currentWall\":%d,\"mac\":\"%02X:%02X:%02X:%02X:%02X:%02X\",\"id\":\"%s\"}",
+             currentWall, mac[0], mac[1], mac[2], mac[3], mac[4], mac[5], id_koskta);
 
     esp_http_client_config_t config_post = {
-        .url = "someURL",
+        .url = "http://192.168.144.9:3000/test",
         .method = HTTP_METHOD_POST,
         .cert_pem = NULL,
         .event_handler = client_event_post_handler};

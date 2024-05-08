@@ -3,3 +3,5 @@
 #define MMA8452Q_SCL GPIO_NUM_22
 #define DELAY_MS 1000
 #define GPIO_PIN_INT1 23
+
+static char *id_koskta = "#1";

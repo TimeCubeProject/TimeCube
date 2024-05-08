@@ -84,6 +84,7 @@ void resetTheWallSendAndPositionTab()
 {
   if (wallSend == true)
   {
+    send_http_post_request(wallPositionTab[0], id_koskta);
     for (size_t i = 0; i < 5; i++)
     {
       wallPositionTab[i] = 0;
@@ -97,7 +98,10 @@ void app_main()
   main_i2c_init(MMA8452Q_SDA, MMA8452Q_SCL);
   MMA8452Q_init();
   startWifi();
+
   rest_get();
+  
+  // send_http_post_request();
 
   gptimer = timer_init();
   gptimerGlobal = timer_init();
@@ -107,7 +111,7 @@ void app_main()
     readAccel(&AccelX, &AccelY, &AccelZ);
     u_int16_t timerValue = getTimerValueMs(gptimer);
     isWallPositionUnchanged = true;
-
+    
     checkIfPositionWallHasChanged(timerValue);
     wallSend = false;
     countTimeOnCurrentWall();

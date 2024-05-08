@@ -1,5 +1,6 @@
 static char *user_ssid = "esp";
-static char *user_password = "nicxdnic23";
+static char *user_password = "nicxdnic123";
+
 
 #define EXAMPLE_ESP_WIFI_SSID      CONFIG_ESP_WIFI_SSID
 #define EXAMPLE_ESP_WIFI_PASS      CONFIG_ESP_WIFI_PASSWORD

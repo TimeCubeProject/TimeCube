@@ -3,7 +3,6 @@
 #include "freertos/task.h"
 #include "ic2Initialize.c"
 #include "readAndDisplayTimerValue.c"
-#include "config.h"
 #include "wifi_starter.c"
 #include "accelReadAndCheckPosition.c"
 #include <stdio.h>

@@ -26,17 +26,22 @@
 #include <nvs_flash.h>
 #include <string.h>
 #include <sys/param.h>
+#include "driver/gpio.h"
+#include "freertos/queue.h"
+#include "driver/ledc.h"
 
 
+#define BUTTON_GPIO 18   // GPIO number for the button (for example, GPIO0)
+#define ESP_INTR_FLAG_DEFAULT 0
 
 
-//static const char *TAGm = "Accel";
-static char *user_ssid = "UNS";
-static char *user_password = "Piotrek13dom1";
+static QueueHandle_t gpio_evt_queue = NULL;  // Declaration of the queue handle
+
 
 bool isServerRunning = true;
 
-uint8_t oldWallPosition = 0;
+uint8_t oldWallPosition = 8;
+uint8_t newWallPosition = 8;
 
 #pragma region NVS
 
@@ -517,7 +522,7 @@ void checkIfPositionWallHasChanged(u_int16_t timerValue)
         isWallPositionUnchanged = false; 
       }
       else{
-        wallSend = true;
+        newWallPosition = wallPositionTab[0];
       }
     }
   }
@@ -568,14 +573,152 @@ void SendAndPositionTabToServer(char *cube_id)
 
 #pragma endregion
 
+#pragma region button
 
 void button_press(){
   printf("Button pressed\n");
   erase_nvs();
 }
 
+// ISR handler for the button press
+static void IRAM_ATTR button_isr_handler(void *arg) {
+    uint32_t gpio_num = (uint32_t) arg;
+    xQueueSendFromISR(gpio_evt_queue, &gpio_num, NULL);
+}
+
+// Task to handle button press
+static void button_task(void *arg) {
+    uint32_t io_num;
+    for (;;) {
+        if (xQueueReceive(gpio_evt_queue, &io_num, portMAX_DELAY)) {
+          button_press();
+        }
+    }
+}
+
+#pragma endregion
+
+
+#pragma region RGB
+#define LEDC_TIMER              LEDC_TIMER_0
+#define LEDC_MODE               LEDC_HIGH_SPEED_MODE
+#define LEDC_OUTPUT_IO_RED      (25) // Define the output GPIO for the red channel
+#define LEDC_OUTPUT_IO_GREEN    (26) // Define the output GPIO for the green channel
+#define LEDC_OUTPUT_IO_BLUE     (27) // Define the output GPIO for the blue channel
+#define LEDC_CHANNEL_RED        LEDC_CHANNEL_0
+#define LEDC_CHANNEL_GREEN      LEDC_CHANNEL_1
+#define LEDC_CHANNEL_BLUE       LEDC_CHANNEL_2
+#define LEDC_DUTY_RES           LEDC_TIMER_8_BIT // Set duty resolution to 8 bits
+#define LEDC_FREQUENCY          (5000) // Frequency in Hertz. Set frequency at 5 kHz
+
+void ledc_init(void)
+{
+    // Prepare and then apply the LEDC PWM timer configuration
+    ledc_timer_config_t ledc_timer = {
+        .speed_mode       = LEDC_MODE,
+        .duty_resolution  = LEDC_DUTY_RES,
+        .timer_num        = LEDC_TIMER,
+        .freq_hz          = LEDC_FREQUENCY,
+        .clk_cfg          = LEDC_AUTO_CLK
+    };
+    esp_err_t err = ledc_timer_config(&ledc_timer);
+    if (err != ESP_OK) {
+        printf("ledc_timer_config failed: %s\n", esp_err_to_name(err));
+        return;
+    }
+
+    // Prepare and then apply the LEDC PWM channel configurations
+    ledc_channel_config_t ledc_channel = {
+        .speed_mode     = LEDC_MODE,
+        .channel        = LEDC_CHANNEL_RED,
+        .timer_sel      = LEDC_TIMER,
+        .intr_type      = LEDC_INTR_FADE_END,
+        .gpio_num       = LEDC_OUTPUT_IO_RED,
+        .duty           = 0, // Set duty to 0%
+        .hpoint         = 0
+    };
+    err = ledc_channel_config(&ledc_channel);
+    if (err != ESP_OK) {
+        printf("ledc_channel_config for RED failed: %s\n", esp_err_to_name(err));
+        return;
+    }
+
+    ledc_channel.channel = LEDC_CHANNEL_GREEN;
+    ledc_channel.gpio_num = LEDC_OUTPUT_IO_GREEN;
+    err = ledc_channel_config(&ledc_channel);
+    if (err != ESP_OK) {
+        printf("ledc_channel_config for GREEN failed: %s\n", esp_err_to_name(err));
+        return;
+    }
+
+    ledc_channel.channel = LEDC_CHANNEL_BLUE;
+    ledc_channel.gpio_num = LEDC_OUTPUT_IO_BLUE;
+    err = ledc_channel_config(&ledc_channel);
+    if (err != ESP_OK) {
+        printf("ledc_channel_config for BLUE failed: %s\n", esp_err_to_name(err));
+        return;
+    }
+}
+
+void set_rgb_color(uint8_t red, uint8_t green, uint8_t blue)
+{
+    // Set the duty cycle for each color channel
+    ledc_set_duty(LEDC_MODE, LEDC_CHANNEL_RED, red);
+    ledc_update_duty(LEDC_MODE, LEDC_CHANNEL_RED);
+
+    ledc_set_duty(LEDC_MODE, LEDC_CHANNEL_GREEN, green);
+    ledc_update_duty(LEDC_MODE, LEDC_CHANNEL_GREEN);
+
+    ledc_set_duty(LEDC_MODE, LEDC_CHANNEL_BLUE, blue);
+    ledc_update_duty(LEDC_MODE, LEDC_CHANNEL_BLUE);
+
+    // Print the current color set for debugging
+    printf("Set RGB color to Red: %d, Green: %d, Blue: %d\n", red, green, blue);
+}
+
+
+
+
+
+#pragma endregion
+
+
 void app_main()
 {
+ledc_init();
+set_rgb_color(255, 0, 0); // Red
+
+
+   gpio_config_t io_conf;
+    // Disable interrupt
+    io_conf.intr_type = GPIO_INTR_DISABLE;
+    // Set as input mode
+    io_conf.mode = GPIO_MODE_INPUT;
+    // Bit mask of the pins to set
+    io_conf.pin_bit_mask = (1ULL << BUTTON_GPIO);
+    // Enable pull-up mode
+    io_conf.pull_up_en = 0;
+    gpio_config(&io_conf);
+
+    // Change interrupt type for the button GPIO
+    gpio_set_intr_type(BUTTON_GPIO, GPIO_INTR_NEGEDGE);
+
+    // Create a queue to handle GPIO events
+    gpio_evt_queue = xQueueCreate(10, sizeof(uint32_t));
+    // Start a task to handle the button press
+    xTaskCreate(button_task, "button_task", 2048, NULL, 10, NULL);
+
+    // Install ISR service
+    gpio_install_isr_service(ESP_INTR_FLAG_DEFAULT);
+    // Hook ISR handler for specific GPIO pin
+    gpio_isr_handler_add(BUTTON_GPIO, button_isr_handler, (void *) BUTTON_GPIO);
+
+    ESP_LOGI(TAG, "Button example configured. Press the button to run function_x.");
+
+
+
+/////
+
 
  esp_err_t err = nvs_flash_init();
     if (err == ESP_ERR_NVS_NO_FREE_PAGES || err == ESP_ERR_NVS_NEW_VERSION_FOUND) {
@@ -630,9 +773,8 @@ void app_main()
     isWallPositionUnchanged = true;
     
     checkIfPositionWallHasChanged(timerValue);
-    wallSend = false;
-    //countTimeOnCurrentWall();
-    if (oldWallPosition != wallPositionTab[0])
+
+    if (oldWallPosition != newWallPosition)
     {
       SendAndPositionTabToServer(cube_id);
     }

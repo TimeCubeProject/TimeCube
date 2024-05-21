@@ -9,6 +9,8 @@
 #include "lwip/sys.h"
 #include "esp_http_client.h"
 
+static char *server_url = "http://192.168.1.0";
+
 esp_err_t client_event_get_handler(esp_http_client_event_handle_t evt)
 {
     switch (evt->event_id)
@@ -37,40 +39,6 @@ esp_err_t client_event_post_handler(esp_http_client_event_handle_t evt)
     return ESP_OK;
 }
 
-static void rest_get()
-{
-    esp_http_client_config_t config_get = {
-        .url = "http://radoslaw.idzikowski.staff.iiar.pwr.wroc.pl/instruction/students.json",
-        .method = HTTP_METHOD_GET,
-        .cert_pem = NULL,
-        .event_handler = client_event_get_handler};
-
-    esp_http_client_handle_t client = esp_http_client_init(&config_get);
-    esp_http_client_perform(client);
-    esp_http_client_cleanup(client);
-}
-
-// static void send_http_post_request(int currentWall)
-// {
-//     // JSON data to send in the request
-//     const char *post_data = "{\"mac\":\"dupa\",\"id\":\"i kamieni kupa\",\"tablica\":[\"jebać\",\"bydgoszcz\"]}";
-
-//     esp_http_client_config_t config_post = {
-//         .url = "http://192.168.144.9:3000/test",
-//         .method = HTTP_METHOD_POST,
-//         .cert_pem = NULL,
-//         .event_handler = client_event_post_handler};
-
-//     esp_http_client_handle_t client = esp_http_client_init(&config_post);
-
-//     esp_http_client_set_post_field(client, post_data, strlen(post_data));
-//     esp_http_client_set_header(client, "Content-Type", "application/json");
-
-//     esp_http_client_perform(client);
-//     esp_http_client_cleanup(client);
-
-// }
-
 void get_mac_address(uint8_t *mac)
 {
     esp_wifi_get_mac(ESP_IF_WIFI_STA, mac);
@@ -86,7 +54,7 @@ static void send_http_post_request(int currentWall, char *id_koskta)
              currentWall, mac[0], mac[1], mac[2], mac[3], mac[4], mac[5], id_koskta);
 
     esp_http_client_config_t config_post = {
-        .url = "http://192.168.144.9:3000/test",
+        .url = server_url,
         .method = HTTP_METHOD_POST,
         .cert_pem = NULL,
         .event_handler = client_event_post_handler};

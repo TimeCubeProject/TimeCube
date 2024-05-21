@@ -4,6 +4,12 @@
     "cmake.configureOnOpen": false,
     "idf.flashType": "UART",
     "files.associations": {
-        "config.h": "c"
-    }
+        ".fantomasignore": "ignore",
+        "config.h": "c",
+        "sstream": "c"
+    },
+    "idf.openOcdConfigs": [
+        "board/esp32-wrover-kit-3.3v.cfg"
+    ],
+    "idf.port": "/dev/cu.usbserial-10"
 }

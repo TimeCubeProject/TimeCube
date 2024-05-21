@@ -4,4 +4,4 @@
 #define DELAY_MS 1000
 #define GPIO_PIN_INT1 23
 
-static char *id_koskta = "#1";
+ 

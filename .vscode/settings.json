@@ -1,3 +1,4 @@
 {
-    "idf.port": "/dev/cu.usbserial-10"
+    "idf.port": "/dev/cu.usbserial-10",
+    "cmake.sourceDirectory": "/Users/zet/Studia/TimeCube/Final/TimeCube/esp32/main"
 }

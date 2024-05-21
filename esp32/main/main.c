@@ -686,6 +686,10 @@ void set_rgb_color(uint8_t red, uint8_t green, uint8_t blue)
 void app_main()
 {
 ledc_init();
+
+ vTaskDelay(pdMS_TO_TICKS(1000));
+
+ 
 set_rgb_color(255, 0, 0); // Red
 
 

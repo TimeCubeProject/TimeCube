@@ -1,1 +1,1 @@
-Server code: [Server](https://github.com/TimeCubeProject/TimeCubeServer/blob/main/index.js)
+Server code: [Server](https://github.com/TimeCubeProject/TimeCubeServer/blob/main)

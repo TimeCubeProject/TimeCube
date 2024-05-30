@@ -266,23 +266,34 @@ static esp_err_t hello_get_handler(httpd_req_t *req) {
    * string passed in user context*/
   // const char *resp_str = (const char *)req->user_ctx;
   // httpd_resp_send(req, resp_str, HTTPD_RESP_USE_STRLEN);
+  uint8_t mac[6];
+    get_mac_address(mac);
+    char mac_str[18];
+    snprintf(mac_str, sizeof(mac_str), "%02X:%02X:%02X:%02X:%02X:%02X",
+             mac[0], mac[1], mac[2], mac[3], mac[4], mac[5]);
 
-  const char *html_resp = "<html><body>"
-                          "<h1>Simple Web Server</h1>"
-                          "<form method=\"post\">"
-                          "SSID: <input type=\"text\" name=\"field1\" minlength=\"1\"><br>"
-                          "Haslo: <input type=\"text\" name=\"field2\" minlength=\"1\"><br>"
-                          "ID kostki: <input type=\"text\" name=\"field3\" minlength=\"1\"><br>"
-                          "<input type=\"submit\" value=\"Submit\">"
-                          "</form>"
-                          "</body></html>";
-  httpd_resp_send(req, html_resp, HTTPD_RESP_USE_STRLEN);
+   const char *html_resp_template = "<html><body>"
+                                     "<h1>Simple Web Server</h1>"
+                                     "<p>Mac: %s</p>"
+                                     "<form method=\"post\">"
+                                     "SSID: <input type=\"text\" name=\"field1\" minlength=\"1\"><br>"
+                                     "Haslo: <input type=\"text\" name=\"field2\" minlength=\"1\"><br>"
+                                     "ID kostki: <input type=\"text\" name=\"field3\" minlength=\"1\"><br>"
+                                     "<input type=\"submit\" value=\"Submit\">"
+                                     "</form>"
+                                     "</body></html>";
+    char html_resp[512];
+    snprintf(html_resp, sizeof(html_resp), html_resp_template, mac_str);
 
-  /* After sending the HTTP response the old HTTP request
-   * headers are lost. Check if HTTP request headers can be read now. */
-  if (httpd_req_get_hdr_value_len(req, "Host") == 0) {
-    ESP_LOGI(TAG, "Request headers lost");
-  }
+    /* Send response with custom headers and body */
+    httpd_resp_send(req, html_resp, HTTPD_RESP_USE_STRLEN);
+
+    /* After sending the HTTP response the old HTTP request
+     * headers are lost. Check if HTTP request headers can be read now. */
+    if (httpd_req_get_hdr_value_len(req, "Host") == 0) {
+        ESP_LOGI(TAG, "Request headers lost");
+    }
+
   return ESP_OK;
 }
 
@@ -506,6 +517,8 @@ void MMA8452Q_init()
   init_Ic2_With_Given_Parameters(MMA8452Q_ADDR, 0x0E, 0x00);
 }
 
+//TODO FIX
+//zmienić error code z 0 na -1
 void checkIfPositionWallHasChanged(u_int16_t timerValue)
 {
   if (timerValue > 5000)
@@ -685,12 +698,16 @@ void set_rgb_color(uint8_t red, uint8_t green, uint8_t blue)
 
 void app_main()
 {
-ledc_init();
+//ledc_init();
 
- vTaskDelay(pdMS_TO_TICKS(1000));
+  uint8_t mac[6];
+    get_mac_address(mac);
+    printf("MAC: %02X:%02X:%02X:%02X:%02X:%02X\n", mac[0], mac[1], mac[2],
+           mac[3], mac[4], mac[5]);
+
 
  
-set_rgb_color(255, 0, 0); // Red
+//set_rgb_color(255, 0, 0); // Red
 
 
    gpio_config_t io_conf;
@@ -778,7 +795,7 @@ set_rgb_color(255, 0, 0); // Red
     
     checkIfPositionWallHasChanged(timerValue);
 
-    if (oldWallPosition != newWallPosition)
+    if (oldWallPosition != newWallPosition && newWallPosition != 0)
     {
       SendAndPositionTabToServer(cube_id);
     }

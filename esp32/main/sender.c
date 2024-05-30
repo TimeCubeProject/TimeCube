@@ -9,7 +9,7 @@
 #include "lwip/sys.h"
 #include "esp_http_client.h"
 
-static char *server_url = "http://192.168.1.0";
+static char *server_url = "http://dergcube.westus.cloudapp.azure.com/update";
 
 esp_err_t client_event_get_handler(esp_http_client_event_handle_t evt)
 {

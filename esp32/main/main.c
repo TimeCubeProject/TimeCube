@@ -718,7 +718,7 @@ void app_main()
     // Bit mask of the pins to set
     io_conf.pin_bit_mask = (1ULL << BUTTON_GPIO);
     // Enable pull-up mode
-    io_conf.pull_up_en = 1;
+    io_conf.pull_up_en = 0;
     gpio_config(&io_conf);
 
     // Change interrupt type for the button GPIO

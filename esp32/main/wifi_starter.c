@@ -10,6 +10,7 @@
 
 #include "lwip/err.h"
 #include "lwip/sys.h"
+#include "led.h"
 
 #pragma region Defines
 #define EXAMPLE_ESP_WIFI_SSID      CONFIG_ESP_WIFI_SSID
@@ -195,17 +196,16 @@ void wifi_init_sta(char *user_ssid, char *user_password)
     {
         ESP_LOGI(TAG, "connected to ap SSID:%s password:%s",
                  user_ssid, user_password);
+        led_turn_off();
     }
     else if (bits & WIFI_FAIL_BIT)
     {
         ESP_LOGI(TAG, "Failed to connect to SSID:%s, password:%s",
                  user_ssid, user_password);
-        //TODO LED
     }
     else
     {
         ESP_LOGE(TAG, "UNEXPECTED EVENT");
-        //TODO LED
     }
      esp_wifi_set_ps(WIFI_PS_MIN_MODEM);
 }

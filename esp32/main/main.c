@@ -13,20 +13,15 @@
 #include "esp_system.h"
 #include "esp_tls_crypto.h"
 #include "esp_wifi_types.h"
-#include "freertos/FreeRTOS.h"
-#include "freertos/task.h"
 #include "lwip/err.h"
 #include "lwip/sys.h"
 #include "nvs_flash.h"
 #include <esp_event.h>
 #include <esp_http_server.h>
 #include <esp_log.h>
-#include <esp_system.h>
 #include <esp_wifi.h>
-#include <nvs_flash.h>
 #include <string.h>
 #include <sys/param.h>
-#include "driver/gpio.h"
 #include "freertos/queue.h"
 #include "driver/ledc.h"
 #include "lwip/dns.h"
@@ -635,9 +630,6 @@ void app_main()
 
 
     // Configure the button GPIO
- 
-
-
    gpio_config_t io_conf;
     // Disable interrupt
     io_conf.intr_type = GPIO_INTR_DISABLE;

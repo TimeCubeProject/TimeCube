@@ -12,6 +12,8 @@
 // Update server_url to use HTTP instead of HTTPS
 static char *server_url = "http://dergcube.westus.cloudapp.azure.com/update";
 
+static const char *TAG_SENDER = "SENDER";
+
 esp_err_t client_event_post_handler(esp_http_client_event_handle_t evt)
 {
     switch (evt->event_id)
@@ -41,8 +43,9 @@ static void send_http_post_request(int currentWall, char *id_koskta)
     snprintf(post_data, sizeof(post_data), "{\"currentWall\":%d,\"mac\":\"%02X:%02X:%02X:%02X:%02X:%02X\",\"id\":\"%s\"}",
              currentWall, mac[0], mac[1], mac[2], mac[3], mac[4], mac[5], id_koskta);
 
-    printf("MAC Address: %02X:%02X:%02X:%02X:%02X:%02X\n", mac[0], mac[1], mac[2], mac[3], mac[4], mac[5]);
-
+    //printf("MAC Address: %02X:%02X:%02X:%02X:%02X:%02X\n", mac[0], mac[1], mac[2], mac[3], mac[4], mac[5]);
+    //printf("Wall %d was send and id %s\n", currentWall, id_koskta);
+    ESP_LOGI(TAG_SENDER, "Wall %d was send and id %s\n", currentWall, id_koskta);
     esp_http_client_config_t config_post = {
         .url = server_url,
         .method = HTTP_METHOD_POST,

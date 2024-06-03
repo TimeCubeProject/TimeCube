@@ -49,6 +49,7 @@ static QueueHandle_t gpio_evt_queue = NULL;  // Declaration of the queue handle
 
 
 bool isServerRunning = true;
+bool isSleeping = true;
 
 uint8_t oldWallPosition = 8;
 uint8_t newWallPosition = 8;
@@ -593,7 +594,7 @@ void SendAndPositionTabToServer(char *cube_id)
 {
   oldWallPosition = wallPositionTab[0];
   send_http_post_request(wallPositionTab[0], cube_id);
-  printf("Wall %d was send and id %s\n", wallPositionTab[0], cube_id);
+  
 }
 
 #pragma endregion
@@ -640,9 +641,10 @@ static const char *TAG_SLEEP = "BUTTON_PRESS";
 // FreeRTOS software timer handle for wake-up delay
 // Function to handle button press
 void switch_deep_sleep() {
-        // If device has not entered deep sleep yet, put it to sleep
-        ESP_LOGI(TAG_SLEEP, "Button pressed, going to deep sleep...");
         send_http_post_request(-1, cube_id);
+        isSleeping = true;
+        ESP_LOGI(TAG_SLEEP, "Button pressed, going to deep sleep...");
+
         // Disable interrupt before sleep
         gpio_intr_disable(BUTTON_GPIO_DEEP_SLEEP);
 
@@ -678,12 +680,14 @@ bool runLedOnce = true;
 
 void app_main()
 {
-esp_sleep_wakeup_cause_t wakeup_reason = esp_sleep_get_wakeup_cause();
-    if (wakeup_reason == ESP_SLEEP_WAKEUP_GPIO) {
-        ESP_LOGI(TAG, "Woke up from deep sleep by GPIO");
-        
-        // Wait a bit to avoid immediate sleep
-        vTaskDelay(pdMS_TO_TICKS(DEBOUNCE_TIME_MS));
+  isSleeping = false;
+  esp_sleep_wakeup_cause_t wakeup_reason = esp_sleep_get_wakeup_cause();
+  if (wakeup_reason == ESP_SLEEP_WAKEUP_GPIO)
+  {
+    ESP_LOGI(TAG, "Woke up from deep sleep by GPIO");
+
+    // Wait a bit to avoid immediate sleep
+    vTaskDelay(pdMS_TO_TICKS(DEBOUNCE_TIME_MS));
     }
 
     // Configure button GPIO as input with pull-up resistor
@@ -701,7 +705,7 @@ esp_sleep_wakeup_cause_t wakeup_reason = esp_sleep_get_wakeup_cause();
     // Create a queue to handle GPIO events
     gpio_switch_evt_queue = xQueueCreate(10, sizeof(uint32_t));
     // Start a task to handle the button press
-    xTaskCreate(switch_deep_sleep_task, "switch_deep_sleep_task", 2048, NULL, 10, NULL);
+    xTaskCreate(switch_deep_sleep_task, "switch_deep_sleep_task", 8096, NULL, 10, NULL);
 
     // Install ISR service
     gpio_install_isr_service(ESP_INTR_FLAG_DEFAULT);
@@ -738,8 +742,6 @@ esp_sleep_wakeup_cause_t wakeup_reason = esp_sleep_get_wakeup_cause();
     // Start a task to handle the button press
     xTaskCreate(button_task, "button_task", 2048, NULL, 10, NULL);
 
-    // Install ISR service
-    gpio_install_isr_service(ESP_INTR_FLAG_DEFAULT);
     // Hook ISR handler for specific GPIO pin
     gpio_isr_handler_add(BUTTON_GPIO, button_isr_handler, (void *) BUTTON_GPIO);
 
@@ -786,7 +788,7 @@ esp_sleep_wakeup_cause_t wakeup_reason = esp_sleep_get_wakeup_cause();
     led_setColor(blue);
     start_server_wifi_host();
   }
-  else{
+  else {
     startWifi(ssid, password);
   
 
@@ -796,7 +798,6 @@ esp_sleep_wakeup_cause_t wakeup_reason = esp_sleep_get_wakeup_cause();
   gptimer = timer_init();
   gptimerGlobal = timer_init();
 
-
   while (1)
   {
     if (/* condition */ runLedOnce)
@@ -804,7 +805,7 @@ esp_sleep_wakeup_cause_t wakeup_reason = esp_sleep_get_wakeup_cause();
       led_turn_off();
       runLedOnce = false;
     }
-    
+    if (isSleeping == false){
     readAccel(&AccelX, &AccelY, &AccelZ);
     u_int16_t timerValue = getTimerValueMs(gptimer);
     isWallPositionUnchanged = true;
@@ -815,6 +816,7 @@ esp_sleep_wakeup_cause_t wakeup_reason = esp_sleep_get_wakeup_cause();
     {
       SendAndPositionTabToServer(cube_id);
     }
+  }
   }
   }
 }

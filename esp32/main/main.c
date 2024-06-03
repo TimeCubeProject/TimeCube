@@ -25,6 +25,14 @@
 #include "freertos/queue.h"
 #include "driver/ledc.h"
 #include "lwip/dns.h"
+#include <stdio.h>
+#include "driver/gpio.h"
+#include "freertos/FreeRTOS.h"
+#include "freertos/task.h"
+#include "freertos/timers.h"
+#include "esp_log.h"
+#include "esp_sleep.h"
+
 
 #define BUTTON_GPIO 18   // GPIO number for the button (for example, GPIO0)
 #define ESP_INTR_FLAG_DEFAULT 0
@@ -44,6 +52,8 @@ bool isServerRunning = true;
 
 uint8_t oldWallPosition = 8;
 uint8_t newWallPosition = 8;
+
+char *cube_id = NULL;
 
 #pragma region NVS
 
@@ -614,12 +624,91 @@ static void button_task(void *arg) {
 
 #pragma endregion
 
+#pragma region deepSleep
+#define BUTTON_GPIO_DEEP_SLEEP 35   // Replace with your actual GPIO pin number
+#define ESP_INTR_FLAG_DEFAULT 0
+#define DEBOUNCE_TIME_MS 200  // Debounce time for button press
+#define WAKEUP_DELAY_MS 1000  // 10 seconds delay before accepting button press as wake-up
+
+// Queue to handle GPIO events
+static QueueHandle_t gpio_switch_evt_queue = NULL;
+// Flag to track whether the wake-up delay timer has expired
+
+// Tag for logging
+static const char *TAG_SLEEP = "BUTTON_PRESS";
+
+// FreeRTOS software timer handle for wake-up delay
+// Function to handle button press
+void switch_deep_sleep() {
+        // If device has not entered deep sleep yet, put it to sleep
+        ESP_LOGI(TAG_SLEEP, "Button pressed, going to deep sleep...");
+        send_http_post_request(-1, cube_id);
+        // Disable interrupt before sleep
+        gpio_intr_disable(BUTTON_GPIO_DEEP_SLEEP);
+
+        // Configure the GPIO as a wake-up source
+        esp_sleep_enable_ext0_wakeup(BUTTON_GPIO_DEEP_SLEEP, 1);
+        gpio_wakeup_enable(BUTTON_GPIO_DEEP_SLEEP, GPIO_INTR_LOW_LEVEL);
+
+        // Small delay to ensure the message is printed before sleep
+        vTaskDelay(pdMS_TO_TICKS(DEBOUNCE_TIME_MS));
+
+        // Enter deep sleep
+        esp_deep_sleep_start();
+}
+
+// ISR handler for the button press
+static void IRAM_ATTR switch_deep_sleep_isr_handler(void *arg) {
+    uint32_t gpio_num = (uint32_t) arg;
+    xQueueSendFromISR(gpio_switch_evt_queue, &gpio_num, NULL);
+}
+
+// Task to handle button press with debounce logic
+static void switch_deep_sleep_task(void *arg) {
+    uint32_t io_num;
+    for (;;) {
+        if (xQueueReceive(gpio_switch_evt_queue, &io_num, portMAX_DELAY)) {
+            switch_deep_sleep();
+        }
+    }
+}
+#pragma endregion
 
 bool runLedOnce = true;
 
 void app_main()
 {
+esp_sleep_wakeup_cause_t wakeup_reason = esp_sleep_get_wakeup_cause();
+    if (wakeup_reason == ESP_SLEEP_WAKEUP_GPIO) {
+        ESP_LOGI(TAG, "Woke up from deep sleep by GPIO");
+        
+        // Wait a bit to avoid immediate sleep
+        vTaskDelay(pdMS_TO_TICKS(DEBOUNCE_TIME_MS));
+    }
 
+    // Configure button GPIO as input with pull-up resistor
+    gpio_config_t io_conf_switch;
+    io_conf_switch.intr_type = GPIO_INTR_DISABLE;  // Disable interrupt
+    io_conf_switch.mode = GPIO_MODE_INPUT;         // Set as input mode
+    io_conf_switch.pin_bit_mask = (1ULL << BUTTON_GPIO_DEEP_SLEEP);  // Bit mask of the pins to set
+    io_conf_switch.pull_up_en = 0;                 // Enable pull-up
+    io_conf_switch.pull_down_en = 1;               // Disable pull-down
+    gpio_config(&io_conf_switch);
+
+    // Change interrupt type for the button GPIO
+    gpio_set_intr_type(BUTTON_GPIO_DEEP_SLEEP, GPIO_INTR_POSEDGE);  // Interrupt on rising edge
+
+    // Create a queue to handle GPIO events
+    gpio_switch_evt_queue = xQueueCreate(10, sizeof(uint32_t));
+    // Start a task to handle the button press
+    xTaskCreate(switch_deep_sleep_task, "switch_deep_sleep_task", 2048, NULL, 10, NULL);
+
+    // Install ISR service
+    gpio_install_isr_service(ESP_INTR_FLAG_DEFAULT);
+    // Hook ISR handler for specific GPIO pin
+    gpio_isr_handler_add(BUTTON_GPIO_DEEP_SLEEP, switch_deep_sleep_isr_handler, (void *) BUTTON_GPIO_DEEP_SLEEP);
+
+////
   led_init();
   led_setColor(red);
   uint8_t mac[6];
@@ -657,7 +746,6 @@ void app_main()
     ESP_LOGI(TAG, "Button example configured. Press the button to run function_x.");
 
 
-
 /////
 
 
@@ -676,7 +764,7 @@ void app_main()
     // Read and print Wi-Fi credentials and Cube ID
     char *ssid = NULL;
     char *password = NULL;
-    char *cube_id = NULL;
+    
     if (read_wifi_credentials(&ssid, &password, &cube_id)) {
         printf("SSID: %s\n", ssid);
         printf("Password: %s\n", password);

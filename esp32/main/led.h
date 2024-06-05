@@ -4,16 +4,19 @@
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
 
+// Structure to represent RGB color
 typedef struct {
     uint8_t r;
     uint8_t g;
     uint8_t b;
 } color_t;
 
+// Define the GPIO pins for the RGB LED
 #define LED_RED_PIN         13
 #define LED_GREEN_PIN       23
 #define LED_BLUE_PIN        5
 
+// LEDC timer configuration
 ledc_timer_config_t ledc_timer = {
     .speed_mode = LEDC_LOW_SPEED_MODE,
     .timer_num  = LEDC_TIMER_0,
@@ -24,6 +27,7 @@ ledc_timer_config_t ledc_timer = {
 
 ledc_channel_config_t ledc_channel[3];
 
+// Function to initialize the LED
 static void led_init(void)
 {
     ESP_ERROR_CHECK(ledc_timer_config(&ledc_timer));
@@ -49,6 +53,7 @@ static void led_init(void)
     }
 }
 
+// Function to set the color of the RGB LED
 static void led_setColor(color_t color)
 {
     uint32_t red_duty = 8191 * color.r / 255;

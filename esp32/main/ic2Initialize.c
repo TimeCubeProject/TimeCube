@@ -1,5 +1,6 @@
 #include "driver/i2c.h"
 
+// Function to initialize I2C with given SDA and SCL pins
 void main_i2c_init(uint8_t MMA8452Q_SDA, uint8_t MMA8452Q_SCL) {
   i2c_config_t conf;
   conf.mode = I2C_MODE_MASTER;
@@ -13,6 +14,7 @@ void main_i2c_init(uint8_t MMA8452Q_SDA, uint8_t MMA8452Q_SCL) {
   i2c_driver_install(I2C_NUM_0, I2C_MODE_MASTER, 0, 0, 0);
 }
 
+// Function to initialize I2C communication with given parameters
 void init_Ic2_With_Given_Parameters(uint8_t MMA8452Q_ADDR,
                                     uint8_t register_address,
                                     uint8_t bits_to_set) {

@@ -1,43 +1,40 @@
 #include <stdio.h>
 #include "config.h"
 #include "driver/i2c.h"
+
+// Function to check the position based on acceleration values
 int checkPosition(int16_t AccelX, int16_t AccelY, int16_t AccelZ)
 {
 
   if (AccelX < 1100 && AccelX > 900)
   {
-    // printf("Sensor is in position +++++X \n");
     return 2;
   }
   else if (AccelX > -1100 && AccelX < -900)
   {
-    // printf("Sensor is in position -----X \n");
     return 4;
   }
   else if (AccelY < 1100 && AccelY > 900)
   {
-    // printf("Sensor is in position +++++Y \n");
     return 3;
   }
   else if (AccelY > -1100 && AccelY < -900)
   {
-    // printf("Sensor is in position -----Y \n");
     return 1;
   }
   else if (AccelZ < 1100 && AccelZ > 900)
   {
-    // printf("Sensor is in position +++++Z \n");
     return 6;
   }
   else if (AccelZ > -1100 && AccelZ < -900)
   {
-    // printf("Sensor is in position -----Z \n");
     return 5;
   }
 
   return 0;
 }
 
+// Function to read acceleration values from the sensor
 void readAccel(int16_t *AccelX, int16_t *AccelY, int16_t *AccelZ)
 {
   uint8_t data[7];

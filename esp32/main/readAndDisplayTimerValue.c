@@ -1,5 +1,6 @@
 #include "driver/gptimer.h"
 
+// Function to initialize and start a GPTimer
 gptimer_handle_t timer_init() {
   printf("Create timer handle\n");
   gptimer_handle_t gptimer = NULL;
@@ -15,6 +16,7 @@ gptimer_handle_t timer_init() {
   return gptimer;
 }
 
+// Function to get the current timer value in milliseconds
 uint64_t getTimerValueMs(gptimer_handle_t gptimer) {
   uint64_t count;
   gptimer_get_raw_count(gptimer, &count);
@@ -22,8 +24,11 @@ uint64_t getTimerValueMs(gptimer_handle_t gptimer) {
   return count;
 }
 
+// Function to set the timer value in milliseconds
 void setTimerValueMs(gptimer_handle_t gptimer, uint64_t value) {
   gptimer_set_raw_count(gptimer, value);
 }
-
-void resetTimer(gptimer_handle_t gptimer) { gptimer_set_raw_count(gptimer, 0); }
+// Function to reset the timer value to zero
+void resetTimer(gptimer_handle_t gptimer) {
+   gptimer_set_raw_count(gptimer, 0); 
+   }

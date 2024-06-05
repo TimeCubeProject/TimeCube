@@ -58,6 +58,7 @@ char *cube_id = NULL;
 
 #pragma region NVS
 
+// NVS functions for saving and reading WiFi credentials
 void save_wifi_credentials(const char *ssid, const char *password, const char *cube_id) {
     nvs_handle_t my_handle;
     esp_err_t err;
@@ -98,6 +99,7 @@ void save_wifi_credentials(const char *ssid, const char *password, const char *c
     reboot_device();
 }
 
+// Code for reading WiFi credentials from NVS
 bool read_wifi_credentials(char **ssid, char **password, char **cube_id) {
     nvs_handle_t my_handle;
     esp_err_t err;
@@ -189,10 +191,7 @@ bool read_wifi_credentials(char **ssid, char **password, char **cube_id) {
     return true;
 }
 
-
-
 #pragma endregion
-
 
 
 #pragma region Wifi_Ap
@@ -310,7 +309,7 @@ static esp_err_t hello_get_handler(httpd_req_t *req) {
   return ESP_OK;
 }
 
-
+//HTTP function to get the data from the form and save it to NVS
 static esp_err_t hello_post_handler(httpd_req_t *req) {
     char buf[100];
     int ret, remaining = req->content_len;
@@ -391,9 +390,7 @@ esp_err_t http_404_error_handler(httpd_req_t *req, httpd_err_code_t err) {
   return ESP_FAIL;
 }
 
-/* An HTTP PUT handler. This demonstrates realtime
- * registration and deregistration of URI handlers
- */
+ // Code for starting the web server in WiFi host mode
 static httpd_handle_t start_webserver(void) {
   httpd_handle_t server = NULL;
   httpd_config_t config = HTTPD_DEFAULT_CONFIG();
@@ -416,8 +413,9 @@ static httpd_handle_t start_webserver(void) {
   return NULL;
 }
 
+ // Stop the httpd server
 static esp_err_t stop_webserver(httpd_handle_t server) {
-  // Stop the httpd server
+ 
   return httpd_stop(server);
 }
 
@@ -459,7 +457,7 @@ static void wifi_event_handler(void *arg, esp_event_base_t event_base,
              event->aid);
   }
 }
-
+// Code for initializing WiFi in SoftAP mode
 esp_err_t wifi_init_softap(void) {
   esp_netif_create_default_wifi_ap();
 
@@ -490,6 +488,7 @@ esp_err_t wifi_init_softap(void) {
 }
 //------------------------------------------------------------------------------
 
+ // Code for starting the web server in WiFi host mode
 void start_server_wifi_host(void) {
     static httpd_handle_t server = NULL;
 
@@ -523,6 +522,7 @@ int16_t AccelX, AccelY, AccelZ;
 bool isWallPositionUnchanged;
 bool wallSend;
 
+// Code for initializing the MMA8452Q accelerometer
 void MMA8452Q_init()
 {
   init_Ic2_With_Given_Parameters(MMA8452Q_ADDR, 0x2A, 0x00);
@@ -530,8 +530,7 @@ void MMA8452Q_init()
   init_Ic2_With_Given_Parameters(MMA8452Q_ADDR, 0x0E, 0x00);
 }
 
-//TODO FIX
-//zmienić error code z 0 na -1
+ // Code for checking if the wall position has changed based on timer value
 void checkIfPositionWallHasChanged(u_int16_t timerValue)
 {
   if (timerValue > 5000)
@@ -574,22 +573,7 @@ void checkIfPositionWallHasChanged(u_int16_t timerValue)
   }
 }
 
-void countTimeOnCurrentWall()
-{
-  if (isWallPositionUnchanged == true && wallPositionTab[0] != 0)
-  {
-
-    wallSend = true;
-    resetTimer(gptimerGlobal);
-    wallTimeTab[wallPositionTab[0] - 1] += 5;
-    printf("\n--------------------\n");
-    for (size_t i = 0; i <= 5; i++)
-    {
-      printf("Wall %d time %d\n", i + 1, wallTimeTab[i]);
-    }
-  }
-}
-
+// Code for sending position and time data to the server
 void SendAndPositionTabToServer(char *cube_id)
 {
   oldWallPosition = wallPositionTab[0];
@@ -665,7 +649,7 @@ static void IRAM_ATTR switch_deep_sleep_isr_handler(void *arg) {
     xQueueSendFromISR(gpio_switch_evt_queue, &gpio_num, NULL);
 }
 
-// Task to handle button press with debounce logic
+// Task to handle button press
 static void switch_deep_sleep_task(void *arg) {
     uint32_t io_num;
     for (;;) {
@@ -758,11 +742,6 @@ void app_main()
     }
     ESP_ERROR_CHECK(err);
     
-    // Save Wi-Fi credentials
-
-   //save_wifi_credentials("your_ssid", "your_password", "your_cube_id");
-
-
     // Read and print Wi-Fi credentials and Cube ID
     char *ssid = NULL;
     char *password = NULL;
@@ -777,8 +756,6 @@ void app_main()
     else
     {
       printf("No Wi-Fi credentials found, entering configuration mode...\n");
-      // Your code here to handle absence of Wi-Fi credentials
-      // e.g., enter configuration mode
       isServerRunning = true;
       
     }
@@ -800,7 +777,7 @@ void app_main()
 
   while (1)
   {
-    if (/* condition */ runLedOnce)
+    if (runLedOnce)
     {
       led_turn_off();
       runLedOnce = false;

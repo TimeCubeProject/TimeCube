@@ -92,6 +92,7 @@ static const char *TAG = "wifi station";
 
 static int s_retry_num = 0;
 
+// Event handler for Wi-Fi events and IP events
 static void event_handler(void *arg, esp_event_base_t event_base,
                           int32_t event_id, void *event_data)
 {
@@ -122,6 +123,7 @@ static void event_handler(void *arg, esp_event_base_t event_base,
     }
 }
 
+// Function to initialize Wi-Fi in station mode
 void wifi_init_sta(char *user_ssid, char *user_password)
 {
     s_wifi_event_group = xEventGroupCreate();
@@ -210,6 +212,7 @@ void wifi_init_sta(char *user_ssid, char *user_password)
      esp_wifi_set_ps(WIFI_PS_MIN_MODEM);
 }
 
+// Function to start Wi-Fi with the given SSID and password
 void startWifi(char *user_ssid, char *user_password)
 {
     // Initialize NVS

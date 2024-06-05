@@ -14,6 +14,7 @@ static char *server_url = "http://dergcube.westus.cloudapp.azure.com/update";
 
 static const char *TAG_SENDER = "SENDER";
 
+// Event handler for HTTP client events
 esp_err_t client_event_post_handler(esp_http_client_event_handle_t evt)
 {
     switch (evt->event_id)
@@ -34,6 +35,7 @@ void get_mac_address(uint8_t *mac)
     esp_wifi_get_mac(ESP_IF_WIFI_STA, mac);
 }
 
+// Function to send an HTTP POST request with the current wall and ID
 static void send_http_post_request(int currentWall, char *id_koskta)
 {
     uint8_t mac[6];
